@@ -18,7 +18,7 @@ class OpenAIAgent(Agent):
 
     def __init__(
         self,
-        model: str = "text-davinci-002",
+        model: str = "text-davinci-003",
         temperature: float = 0.0,
         top_p: float = 1.0,
     ):

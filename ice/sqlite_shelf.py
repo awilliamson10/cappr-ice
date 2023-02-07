@@ -76,7 +76,10 @@ try:
 except ImportError:
     import pickle
 
+import os
 import sys
+
+import redis
 
 valtype = str
 if sys.version > "3":
@@ -176,3 +179,57 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+
+class RedisDict(DictMixin):
+    def __init__(
+        self,
+        hash_name,
+        host=os.getenv("REDIS_URL", "localhost"),
+        port=os.getenv("REDIS_PORT", 6379),
+        password=os.getenv("REDIS_PASSWORD", None),
+        ssl=os.getenv("REDIS_SSL", False),
+        ttl=21600,
+    ):
+        self.hash_name = hash_name
+        self.redis = redis.Redis(host=host, port=port, password=password, ssl=ssl)
+        self.ttl = ttl
+
+    def __getitem__(self, key):
+        value = self.redis.hget(self.hash_name, key)
+        if value is None:
+            raise KeyError(key)
+        return value
+
+    def __setitem__(self, key, value):
+        self.redis.hset(self.hash_name, key, value)
+        self.redis.expire(self.hash_name, self.ttl)
+
+    def __delitem__(self, key):
+        self.redis.hdel(self.hash_name, key)
+
+    def __iter__(self):
+        return iter(self.redis.hkeys(self.hash_name))
+
+    def __len__(self):
+        return self.redis.hlen(self.hash_name)
+
+    def keys(self):
+        return self.redis.hkeys(self.hash_name)
+
+    def close(self):
+        self.redis.connection_pool.disconnect()
+
+    def __del__(self):
+        self.close()
+
+    def __repr__(self):
+        return repr(dict(self))
+
+
+class RedisShelf(RedisDict):
+    def __getitem__(self, key):
+        return pickle.loads(RedisDict.__getitem__(self, key))
+
+    def __setitem__(self, key, item):
+        RedisDict.__setitem__(self, key, pickle.dumps(item))

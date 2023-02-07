@@ -110,7 +110,7 @@ def function_recipe_from_path(path: str) -> FunctionBasedRecipe:
 
 class RecipeHelper:
     def __init__(self):
-        self._mode: Mode | None = "machine"
+        self._mode: Mode | None = "machine-cached"
         self.all_recipes: list[FunctionBasedRecipe] = []
 
     def main(self, main: FunctionBasedRecipe):

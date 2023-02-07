@@ -27,6 +27,7 @@ MACHINE_AGENTS = {
     "instruct-reasoning": lambda: OpenAIReasoningAgent(),
     "instruct-reasoning-crowd": lambda: OpenAIReasoningAgent(num_workers=8),
     "curie": lambda: OpenAIAgent(model="curie"),
+    "ada": lambda: OpenAIAgent(model="ada"),
     "qasper": lambda: SquadAgent(),
     "mono-t5": lambda: OughtInferenceAgent(engine="mono-t5-base"),
     "adherence-tfew": lambda: TFew(
